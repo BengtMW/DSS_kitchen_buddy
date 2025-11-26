@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🍳 KitchenBuddy – Ask a Question 🥄</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffe4f0;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        header {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        input, textarea {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 2px solid #ff69b4;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff85c1;
+        }
+
+        #answer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff0f5;
+            border: 2px solid #ff69b4;
+            border-radius: 10px;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <header>🍳 Ask KitchenBuddy 🥄</header>
+
+    <div class="container">
+        <h2>Ask a cooking question</h2>
+        <textarea id="questionInput" rows="3" placeholder="Type your question here..."></textarea>
+        <br>
+        <button onclick="askQuestion()">Ask</button>
+
+        <div id="loader" style="display:none;">🤔 Thinking…</div>
+
+        <div id="answer"></div>
+    </div>
+
+    <script>
+        async function askQuestion() {
+            const question = document.getElementById("questionInput").value;
+            if (!question) return alert("Please type a question!");
+
+            document.getElementById("loader").style.display = "block";
+            document.getElementById("answer").innerText = "";
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/ask", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        question: question,
+                        current_step: { number: 0, instruction: "" }, // placeholder if no step
+                        all_steps: []
+                    })
+                });
+
+                if (!response.ok) throw new Error("Server error");
+
+                const data = await response.json();
+                document.getElementById("answer").innerText = "💡 " + data.answer;
+            } catch (err) {
+                document.getElementById("answer").innerText = "❌ Error: " + err.message;
+            } finally {
+                document.getElementById("loader").style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

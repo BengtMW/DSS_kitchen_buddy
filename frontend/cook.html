@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🍳 Cook – Recipe Parser</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #ffe6f2; /* light pink */
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        header {
+            background: #ff99cc; 
+            color: white;
+            padding: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            background: white;
+            width: 70%;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        textarea {
+            width: 90%;
+            height: 180px;
+            padding: 10px;
+            border: 2px solid #ff99cc;
+            border-radius: 12px;
+            outline: none;
+            font-size: 1rem;
+            background: #fff0f6;
+        }
+
+        textarea:focus {
+            border-color: #ff66b3;
+        }
+
+        button {
+            background: #ff66b3;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #ff3385;
+            transform: scale(1.05);
+        }
+
+        .loader {
+            display: none;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: #ff3385;
+        }
+
+        #result {
+            text-align: left;
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 15px;
+            background: #fff0f6;
+            border: 2px solid #ffb3d9;
+        }
+
+        h2 {
+            color: #ff3385;
+        }
+
+        h3 {
+            color: #cc0066;
+        }
+    </style>
+</head>
+
+<body>
+<header>🍓 KitchenBuddy – Recipe Parser 🍰</header>
+
+<button onclick="location.href='index.html'">🏠 Back to Menu</button>
+
+<div class="container">
+    <h2>✨ Paste your recipe ✨</h2>
+
+    <textarea id="recipeInput" placeholder="🍰 Paste a recipe here..."></textarea>
+    <br><br>
+
+    <button onclick="parseRecipe()">🍳 Parse Recipe</button>
+
+    <div class="loader" id="loader">Parsing recipe… 👩‍🍳</div>
+    <div id="result"></div>
+</div>
+
+<script>
+async function parseRecipe() {
+    const recipeText = document.getElementById('recipeInput').value;
+    const resultDiv = document.getElementById('result');
+    const loader = document.getElementById('loader');
+
+    loader.style.display = 'block';
+    resultDiv.innerHTML = '';
+    
+    try {
+        const response = await fetch('http://127.0.0.1:8000/parse_recipe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({recipe_text: recipeText})
+        });
+
+        const data = await response.json();
+        loader.style.display = 'none';
+
+        resultDiv.innerHTML = `
+            <h3>📖 Recipe: ${data.title || "Untitled"}</h3>
+            ${data.steps.map(s => `<p>👉 ${s.number}. ${s.instruction}</p>`).join('')}
+        `;
+    } catch (err) {
+        loader.style.display = 'none';
+        resultDiv.innerHTML = '❌ Error parsing recipe 😢';
+        console.error(err);
+    }
+}
+</script>
+</body>
+</html>

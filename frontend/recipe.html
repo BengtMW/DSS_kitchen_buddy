@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🥗 KitchenBuddy – Generate a Recipe 👩‍🍳</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background-color: #ffe4f0;
+            color: #333;
+            text-align: center;
+            padding: 30px;
+        }
+
+        header {
+            font-size: 2.3em;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        textarea, input {
+            width: 80%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid #ff69b4;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff85c1;
+        }
+
+        #loader {
+            margin-top: 20px;
+            display: none;
+            font-size: 1.1em;
+        }
+
+        #output {
+            background-color: #fff0f5;
+            border-radius: 12px;
+            border: 2px solid #ff69b4;
+            margin-top: 30px;
+            padding: 20px;
+            text-align: left;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            white-space: pre-wrap;
+        }
+
+        h3 {
+            color: #ff4081;
+        }
+    </style>
+</head>
+<body>
+
+<header>🥗 Generate a Recipe 🍽️</header>
+
+<div>
+    <h2>Enter your ingredients</h2>
+    <textarea id="ingredients" rows="4" placeholder="e.g. chicken, tomatoes, garlic, rice..."></textarea>
+
+    <h2>Any preferences? (optional)</h2>
+    <input id="preferences" placeholder="e.g. vegetarian, spicy, 20 minutes, lactose-free">
+
+    <br>
+    <button onclick="generateRecipe()">Generate Recipe</button>
+
+    <div id="loader">⏳ Generating your recipe…</div>
+
+    <div id="output"></div>
+</div>
+
+<script>
+async function generateRecipe() {
+    const ingredients = document.getElementById("ingredients").value.trim();
+    const preferences = document.getElementById("preferences").value.trim();
+    const output = document.getElementById("output");
+
+    if (!ingredients) {
+        alert("Please enter at least some ingredients!");
+        return;
+    }
+
+    document.getElementById("loader").style.display = "block";
+    output.innerHTML = "";
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/generate_recipe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ingredients: ingredients,
+                preferences: preferences || null
+            })
+        });
+
+        if (!response.ok) throw new Error("Server error");
+
+        const data = await response.json();
+
+        let html = `
+            <h3>${data.title}</h3>
+            <p><strong>${data.description || ""}</strong></p>
+            <h4>📝 Ingredients:</h4>
+            <ul>
+        `;
+
+        data.ingredients_list.forEach(i => {
+            html += `<li>${i}</li>`;
+        });
+
+        html += `</ul><h4>👩‍🍳 Steps:</h4><ol>`;
+
+        data.steps.forEach(step => {
+            html += `<li>${step.instruction}</li>`;
+        });
+
+        html += `</ol>`;
+
+        output.innerHTML = html;
+
+    } catch (err) {
+        output.innerHTML = "❌ Error: " + err.message;
+    }
+
+    document.getElementById("loader").style.display = "none";
+}
+</script>
+
+</body>
+</html>

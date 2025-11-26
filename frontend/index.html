@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🍓 KitchenBuddy – Main Menu</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(to bottom right, #ffd1dc, #ffe6f0);
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #ff8fcf;
+            padding: 20px;
+            font-size: 2em;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        h2 {
+            margin-top: 40px;
+            color: #d61c4e;
+        }
+        .menu-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 40px;
+        }
+        .app-card {
+            background-color: #fff0f6;
+            border: 2px solid #ffb6d5;
+            border-radius: 20px;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .app-card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.4);
+        }
+        .emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>🍓 KitchenBuddy – Choose Your App 🍓</header>
+
+    <h2>What do you want to do today? 🎉</h2>
+
+    <div class="menu-container">
+        <div class="app-card" onclick="location.href='/cook'">
+            <div class="emoji">🍳</div>
+            Recipe Parser
+        </div>
+        <div class="app-card" onclick="location.href='/recipe'">
+            <div class="emoji">🍝</div>
+            Recipe Generator
+        </div>
+        <div class="app-card" onclick="location.href='/ask'">
+            <div class="emoji">❓</div>
+            Ask The AI
+        </div>
+    </div>
+</body>
+</html>
