@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🍳 KitchenBuddy – Cooking Session</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #ffe6f2;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #333;
+        }
+        header {
+            background: #ff99cc;
+            color: white;
+            padding: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 18px;
+            background: #ff66b3;
+            border: none;
+            color: white;
+            border-radius: 999px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .container {
+            background: white;
+            width: 70%;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            text-align: left;
+        }
+        h2 { color: #ff3385; margin-top: 0; }
+        .step-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .step-box {
+            padding: 18px;
+            border-radius: 14px;
+            border: 2px solid #ffb3d9;
+            background: #fff0f6;
+            min-height: 80px;
+            font-size: 1.1rem;
+        }
+        .nav-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #ff66b3;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        button:hover:not(:disabled) {
+            background: #ff3385;
+            transform: scale(1.03);
+        }
+        button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+        .question-block {
+            margin-top: 30px;
+            border-top: 1px solid #ffd1e6;
+            padding-top: 20px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 70px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 2px solid #ff99cc;
+            outline: none;
+            resize: vertical;
+            background: #fff8fb;
+        }
+        #answer {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #fff0f6;
+            border: 2px solid #ffb3d9;
+            min-height: 40px;
+            white-space: pre-wrap;
+        }
+        #loader { margin-top: 10px; font-size: 0.95rem; color: #ff3385; display: none; }
+
+        #voiceStatus { margin-top: 8px; font-size: 0.9rem; color:#777; }
+
+        .warning {
+            margin: 20px auto 0;
+            width: 70%;
+            padding: 12px;
+            border-radius: 12px;
+            background: #fff0f0;
+            border: 2px solid #ff9999;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <button class="back-btn" onclick="location.href='/cook'">⬅ Back</button>
+    🍳 KitchenBuddy – Cooking Session
+</header>
+
+<div id="noDataWarning" class="warning" style="display:none;">
+    ⚠️ No recipe steps found. Please go back to the Parser and click <strong>Start Cooking</strong> after parsing a recipe.
+</div>
+
+<div class="container" id="cookContainer" style="display:none;">
+    <h2 id="recipeTitle">Your Recipe</h2>
+
+    <div class="step-meta">
+        <div id="stepCounter">Step 1 of 1</div>
+        <div id="progressText">Let's start cooking! 🎉</div>
+    </div>
+
+    <div class="step-box" id="stepText">Loading step...</div>
+
+    <div class="nav-buttons">
+        <button id="prevBtn" onclick="goPrev()">⬅ Previous</button>
+        <button onclick="repeatStep()">🔁 Repeat</button>
+        <button id="nextBtn" onclick="goNext()">Next ➡</button>
+        <button id="voiceBtn" onclick="toggleVoice()">🎤 Voice</button>
+    </div>
+
+    <div id="voiceStatus">Voice control: off</div>
+
+    <div class="question-block">
+        <h3>❓ Ask KitchenBuddy</h3>
+        <textarea id="questionInput" placeholder="E.g. 'What does sauté mean?'"></textarea>
+        <br><br>
+        <button onclick="askQuestion()">Ask</button>
+
+        <div id="loader">🤔 Thinking…</div>
+        <div id="answer"></div>
+    </div>
+</div>
+
+<script>
+let steps = [];
+let currentIndex = 0;
+
+// Load parsed steps from the parser page (sessionStorage)
+function loadFromSession() {
+    const stepsJson = sessionStorage.getItem("kb_steps");
+    const title = sessionStorage.getItem("kb_title") || "Your Recipe";
+
+    if (!stepsJson) {
+        document.getElementById("noDataWarning").style.display = "block";
+        return;
+    }
+
+    steps = JSON.parse(stepsJson);
+    currentIndex = 0;
+
+    document.getElementById("recipeTitle").innerText = title;
+    document.getElementById("cookContainer").style.display = "block";
+
+    renderStep();
+}
+
+function renderStep() {
+    const step = steps[currentIndex];
+    const total = steps.length;
+
+    document.getElementById("stepText").innerText = step.instruction;
+    document.getElementById("stepCounter").innerText =
+        `Step ${step.number || currentIndex + 1} of ${total}`;
+
+    let progressMsg = 
+        (currentIndex === total - 1) ? "Last step – almost done! 😋" :
+        (currentIndex > 0) ? "Keep going! 💪" :
+        "Let's start cooking! 🎉";
+
+    document.getElementById("progressText").innerText = progressMsg;
+
+    document.getElementById("prevBtn").disabled = (currentIndex === 0);
+    document.getElementById("nextBtn").disabled = (currentIndex === total - 1);
+}
+
+function goNext() { if (currentIndex < steps.length - 1) { currentIndex++; renderStep(); } }
+function goPrev() { if (currentIndex > 0) { currentIndex--; renderStep(); } }
+function repeatStep() { renderStep(); }
+
+
+// ---------- Ask KitchenBuddy ----------
+async function askQuestion() {
+    const question = document.getElementById("questionInput").value.trim();
+    if (!question) return alert("Please type a question!");
+
+    const loader = document.getElementById("loader");
+    const answerDiv = document.getElementById("answer");
+
+    loader.style.display = "block";
+    answerDiv.innerText = "";
+
+    const currentStep = steps[currentIndex];
+
+    try {
+        const resp = await fetch("/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                question,
+                current_step: currentStep,
+                all_steps: steps
+            })
+        });
+
+        const data = await resp.json();
+        answerDiv.innerText = data.answer || "No answer.";
+    } catch (err) {
+        answerDiv.innerText = "Error: " + err.message;
+    }
+
+    loader.style.display = "none";
+}
+
+
+// ---------- Voice Commands ----------
+let recognition = null;
+let isListening = false;
+
+function setupVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        document.getElementById("voiceStatus").innerText = "Voice control not supported.";
+        document.getElementById("voiceBtn").disabled = true;
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+        isListening = true;
+        document.getElementById("voiceStatus").innerText = "Listening… 🎧";
+        document.getElementById("voiceBtn").innerText = "🛑 Stop";
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        document.getElementById("voiceStatus").innerText = "Voice control: off";
+        document.getElementById("voiceBtn").innerText = "🎤 Voice";
+    };
+
+    recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript.toLowerCase();
+        handleVoiceCommand(text);
+    };
+}
+
+function toggleVoice() {
+    if (!recognition) setupVoice();
+    if (!recognition) return;
+
+    if (!isListening) recognition.start();
+    else recognition.stop();
+}
+
+function handleVoiceCommand(text) {
+    if (text.includes("next") || text.includes("volgende")) return goNext();
+    if (text.includes("previous") || text.includes("back") || text.includes("vorige")) return goPrev();
+    if (text.includes("repeat") || text.includes("herhaal")) return repeatStep();
+
+    // Anything else → treat as a question
+    document.getElementById("questionInput").value = text;
+    askQuestion();
+}
+
+window.onload = () => {
+    loadFromSession();
+    setupVoice();
+};
+</script>
+
+</body>
+</html>
