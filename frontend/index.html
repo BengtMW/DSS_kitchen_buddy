@@ -2,76 +2,361 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>🍓 KitchenBuddy – Main Menu</title>
+    <title>KitchenBuddy – Main Menu</title>
     <style>
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: linear-gradient(to bottom right, #ffd1dc, #ffe6f0);
-            color: #333;
-            text-align: center;
+            font-family: 'Georgia', serif;
+            background: url('https://images.unsplash.com/photo-1504754524776-8f4f37790ca0') 
+                center/cover fixed no-repeat;
+            color: #2e2e2e;
             margin: 0;
             padding: 0;
         }
+
+        /* Soft dark overlay to make the text readable */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
         header {
-            background-color: #ff8fcf;
-            padding: 20px;
-            font-size: 2em;
-            color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.92);
+            padding: 25px;
+            font-size: 2.1em;
+            font-weight: bold;
+            font-family: "Merriweather", serif;
+            color: #5a3825;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            border-bottom: 4px solid #d8c3a5;
+            backdrop-filter: blur(3px);
+            text-align: center;
         }
+
         h2 {
-            margin-top: 40px;
-            color: #d61c4e;
+            color: #ffffff;
+            font-family: "Merriweather", serif;
+            margin-top: 25px;
+            font-size: 1.7em;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+            text-align: center;
         }
+
+        /* Cards with cooking aesthetic */
         .menu-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            gap: 35px;
             margin-top: 40px;
-            gap: 40px;
+            padding-bottom: 40px;
         }
+
         .app-card {
-            background-color: #fff0f6;
-            border: 2px solid #ffb6d5;
-            border-radius: 20px;
-            width: 200px;
-            height: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.3em;
+            width: 260px;
+            height: 260px;
+            border-radius: 18px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.35);
+            transform: translateY(0);
+            transition: 0.3s ease;
+            background-color: #fff;
         }
+
+        /* Hover lift + stronger shadow */
         .app-card:hover {
-            transform: scale(1.1);
-            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.4);
+            transform: translateY(-10px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.55);
         }
-        .emoji {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+
+        /* Background images for each tool */
+        .app-card[data-type="parser"] {
+            background: url('https://images.unsplash.com/photo-1604335399102-0e95dbd2e2e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center/cover;
         }
+
+        .app-card[data-type="generator"] {
+            background: url('https://images.unsplash.com/photo-1604335399102-0e95dbd2e2e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center/cover;
+        }
+
+        .app-card[data-type="ask"] {
+            background: url('https://images.unsplash.com/photo-1604335399102-0e95dbd2e2e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center/cover;
+        }
+
+        /* Dark overlay for readability */
+        .app-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.1));
+        }
+
+        /* Text on card */
+        .app-card span {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 1.6em;
+            font-family: "Merriweather", serif;
+            font-weight: bold;
+            z-index: 5;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+        }
+
+
+        /* Settings button */
+        /* FORCE OVERRIDE — Rustic Settings Button */
+        body #settingsBtn {
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 12px !important;
+            background: linear-gradient(135deg, #4a3625, #463628) !important;
+            border: 2px solid #b49a84 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.45em !important;
+            color: #4a3625 !important;
+            position: absolute !important;
+            top: 18px !important;
+            right: 20px !important;
+            cursor: pointer !important;
+
+            box-shadow:
+                0 4px 10px rgba(0,0,0,0.35),
+                inset 0 2px 3px rgba(255,255,255,0.5),
+                inset 0 -2px 4px rgba(0,0,0,0.1) !important;
+
+            transition: 0.25s ease !important;
+        }
+
+        body #settingsBtn:hover {
+            background: linear-gradient(135deg, #dbc8b4, #cbb49d) !important;
+            transform: translateY(-3px) !important;
+            box-shadow:
+                0 8px 18px rgba(0,0,0,0.45),
+                inset 0 1px 3px rgba(255,255,255,0.4) !important;
+        }
+
+
+        /* Popup modal */
+        #settingsModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 60%;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 14px;
+            border: 2px solid #d8c3a5;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            font-family: "Merriweather", serif;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: #5a3825;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .save-btn {
+            display: block;
+            margin: 25px auto;
+            background: #b89b83;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: 0.25s;
+            font-family: "Merriweather", serif;
+        }
+
+        .save-btn:hover {
+            background: #8f725f;
+        }
+
+
+        /* Footer */
+        .academic-footer {
+            background: rgba(255,255,255,0.92);
+            padding: 30px;
+            margin-top: 80px;
+            font-size: 0.8rem;
+            color: #5a3825;
+            text-align: center;
+            border-top: 4px solid #d8c3a5;
+            backdrop-filter: blur(4px);
+        }
+
+        .footer-top {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #4b3621;
+            font-weight: bold;
+        }
+
+        .footer-info span {
+            opacity: 0.85;
+            padding: 0 6px;
+        }
+
     </style>
 </head>
 <body>
-    <header>🍓 KitchenBuddy – Choose Your App 🍓</header>
+    <header> KitchenBuddy – Choose Your App </header>
 
-    <h2>What do you want to do today? 🎉</h2>
+    <div id="settingsBtn" onclick="openSettings()">⚙️</div>
+
+    <h2>What do you want to do today? </h2>
 
     <div class="menu-container">
-        <div class="app-card" onclick="location.href='/cook'">
-            <div class="emoji">🍳</div>
-            Recipe Parser
+    
+        <!-- Recipe Parser Card -->
+        <div class="app-card" onclick="location.href='/cook'" data-type="parser">
+            <span>Recipe Parser</span>
         </div>
-        <div class="app-card" onclick="location.href='/recipe'">
-            <div class="emoji">🍝</div>
-            Recipe Generator
+
+        <!-- Recipe Generator Card -->
+        <div class="app-card" onclick="location.href='/recipe'" data-type="generator">
+            <span>Recipe Generator</span>
         </div>
-        <div class="app-card" onclick="location.href='/ask'">
-            <div class="emoji">❓</div>
-            Ask The AI
+
+        <!-- Ask The AI Card -->
+        <div class="app-card" onclick="location.href='/ask'" data-type="ask">
+            <span>Ask The AI</span>
+        </div>
+
+    </div>
+
+    <div id="settingsModal">
+        <div class="modal-content">
+            <h2>Kitchen Settings</h2>
+            <p>Select the tools and appliances you own:</p>
+            <div class="tools-grid" id="toolsList"></div>
+            <button class="save-btn" onclick="saveSettings()">Save Settings</button>
         </div>
     </div>
+
+<script>
+const kitchenTools = [
+    "Microwave", "Stove", "Oven", "Air fryer",
+    "Refrigerator", "Blender", "Mixer", "Rice cooker",
+    "Colander", "Spatula", "Food mill", "Funnel",
+    "Grater", "Potato masher", "Rolling pin",
+    "Strainer", "Whisk"
+];
+
+const OFFICIAL_UTENSILS = [
+    "Blender","Mixer","Rice cooker","Colander","Spatula",
+    "Food mill","Funnel","Grater","Potato masher","Rolling pin",
+    "Strainer","Whisk"
+];
+const OFFICIAL_APPLIANCES = ["Microwave","Stove","Oven","Air fryer","Refrigerator"];
+
+// Build checklist into modal
+const toolsContainer = document.getElementById("toolsList");
+
+// Load saved settings from the same key used elsewhere
+let savedSettings = null;
+try {
+    savedSettings = JSON.parse(sessionStorage.getItem("kitchenSettings") || "null");
+} catch (e) {
+    savedSettings = null;
+}
+const savedSelected = Array.isArray(savedSettings && (savedSettings.utensils || savedSettings.appliances))
+    ? [...(savedSettings.utensils || []), ...(savedSettings.appliances || [])]
+    : [];
+
+// Build UI
+kitchenTools.forEach(tool => {
+    const checked = savedSelected.includes(tool) ? "checked" : "";
+    toolsContainer.innerHTML += `
+        <label style="display:block; margin-bottom:6px;">
+            <input type="checkbox" value="${tool}" ${checked}>
+            ${tool}
+        </label>
+    `;
+});
+
+function openSettings() {
+    document.getElementById("settingsModal").style.display = "block";
+}
+
+function saveSettings() {
+    // gather selected tools from modal
+    const selected = [...document.querySelectorAll('#toolsList input:checked')].map(cb => cb.value);
+
+    // split into utensils and appliances using the official lists
+    const utensils = selected.filter(s => OFFICIAL_UTENSILS.includes(s));
+    const appliances = selected.filter(s => OFFICIAL_APPLIANCES.includes(s));
+
+    // build full payload expected by backend + other pages
+    const payload = {
+        measurement: null,
+        utensils: utensils,
+        appliances: appliances
+    };
+
+    // save unified structure in sessionStorage under the key the rest of your app expects
+    sessionStorage.setItem("kitchenSettings", JSON.stringify(payload));
+
+    // send the same payload to backend (exact shape)
+    fetch("/save-tools", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    }).catch(err => {
+        console.error("Failed to save to backend:", err);
+    });
+
+    alert("Kitchen settings saved!");
+    document.getElementById("settingsModal").style.display = "none";
+}
+</script>
+
+
+<footer class="academic-footer">
+
+    <div class="footer-top">
+        <span>Simulation Exercise: AI Training and Assessment</span>
+        <span class="footer-separator">•</span>
+        <span>Bengt Weerstand, Elena Sardanu, Niki Bonev, Noa Ubbens</span>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <span>University of Groningen</span>
+            <span class="footer-separator">•</span>
+            <span>BSc Data Science and Society</span>
+            <span class="footer-separator">•</span>
+            <span>2025/2026</span>
+            <span class="footer-separator">•</span>
+            <span>Lecturers: Prof. Dr. Andrej Zwitter and Dr. Joshua Schäuble</span>
+        </div>
+    </div>
+
+</footer>
+
 </body>
 </html>
