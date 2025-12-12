@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> KitchenBuddy – Ask a Question </title>
+    <style>
+        body {
+            font-family: "Merriweather", serif;
+            background: url('https://images.unsplash.com/photo-1504754524776-8f4f37790ca0')
+                center/cover fixed no-repeat;
+            color: #4b3621;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Soft dark overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 25px 20px;
+            font-size: 2.2rem;
+            font-family: "Merriweather", serif;
+            color: #5a3825;
+            font-weight: bold;
+            border-bottom: 4px solid #d8c3a5;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            text-align: center;
+        }
+
+        /* Back to Menu Button Container */
+        .back-button-container {
+            display: flex;
+            justify-content: center; /* horizontaal centreren */
+            margin: 15px 0; /* ruimte boven en onder de knop */
+        }
+
+        button {
+            padding: 12px 26px;
+            font-size: 1.05em;
+            background: linear-gradient(135deg, #6e4c34, #5a3d2a);
+            color: #fff;
+            border: 2px solid #b49a84;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: "Merriweather", serif;
+            box-shadow:
+                0 4px 12px rgba(0,0,0,0.35),
+                inset 0 2px 3px rgba(255,255,255,0.5);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #d8c3a5, #c4ab94);
+            color: #4a3625;
+            transform: translateY(-3px);
+            box-shadow:
+                0 8px 18px rgba(0,0,0,0.45),
+                inset 0 2px 3px rgba(255,255,255,0.4);
+        }
+
+        /* Main container */
+        .content-box {
+            background: rgba(255, 255, 255, 0.92);
+            max-width: 750px;
+            margin: 25px auto 45px auto;
+            padding: 35px 45px;
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+            border: 2px solid #d8c3a5;
+            backdrop-filter: blur(4px);
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 14px;
+            margin-top: 12px;
+            border-radius: 12px;
+            border: 2px solid #b49a84;
+            background: #f6f1eb;
+            font-size: 1rem;
+            font-family: "Merriweather", serif;
+            resize: vertical;
+            box-shadow: inset 0 3px 5px rgba(0,0,0,0.08);
+            transition: 0.25s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #8f725f;
+            box-shadow: 0 0 6px rgba(165, 140, 110, 0.45);
+            background: #fffdf9;
+        }
+
+        #loader {
+            display: none; /* Hidden initially */
+            margin-top: 18px;
+            font-size: 1.1em;
+            font-style: italic;
+            opacity: 0.85;
+            color: #4b3621;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        #answer {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border: 2px solid #d8c3a5;
+            border-radius: 14px;
+            min-height: 70px;
+            text-align: left;
+            line-height: 1.55;
+            font-family: "Merriweather", serif;
+            font-size: 1rem;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+
+<header> Ask KitchenBuddy </header>
+
+<!-- Centered Back to Menu Button -->
+<div class="back-button-container">
+    <button onclick="location.href='/'"> Back to Menu</button>
+</div>
+
+<div class="content-box">
+    <h2>Ask a cooking question</h2>
+    <textarea id="questionInput" rows="3" placeholder="Type your main question here..."></textarea>
+    
+    <button onclick="askQuestion()">Ask</button>
+
+    <!-- Initially hidden loader -->
+    <div id="loader"> Thinking…</div>
+    
+    <div id="answer"></div>
+</div>
+
+<script>
+async function askQuestion() {
+    const question = document.getElementById("questionInput").value.trim();
+
+    if (!question) return alert("Please type a question!");
+
+    document.getElementById("loader").style.display = "block";  // Show loader
+    const answerDiv = document.getElementById("answer");
+    answerDiv.innerText = "";
+
+    try {
+        const response = await fetch("/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question, context, current_step: null, all_steps: [] }),
+        });
+
+        if (!response.ok) throw new Error("Server error");
+
+        const data = await response.json();
+        answerDiv.innerText = (data.answer || "No answer received");
+
+    } catch (err) {
+        answerDiv.innerText = " Error: " + err.message + 
+            "\n MODEL_UNAVAILABLE: Ollama not reachable or backend error.";
+    } finally {
+        document.getElementById("loader").style.display = "none";  // Hide loader
+    }
+}
+</script>
+
+</body>
+</html>
