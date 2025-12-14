@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+kitchen_tools.json
+.env

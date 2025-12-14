@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KitchenBuddy – Recipe Parser</title>
+    <style>
+        body {
+            font-family: "Merriweather", serif;
+            background: url('https://images.unsplash.com/photo-1504754524776-8f4f37790ca0')
+                center/cover fixed no-repeat;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #4b3621;
+        }
+
+        /* Soft dark overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        header {
+            background: rgba(255,255,255,0.92);
+            color: #5a3825;
+            padding: 22px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-bottom: 4px solid #d8c3a5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        button {
+            background: linear-gradient(135deg, #6e4c34, #5a3d2a);
+            color: white;
+            border: 2px solid #b49a84;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 10px;
+            display: inline-block;
+            font-family: "Merriweather", serif;
+            box-shadow:
+                0 4px 12px rgba(0,0,0,0.35),
+                inset 0 2px 3px rgba(255,255,255,0.5);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #d8c3a5, #c4ab94);
+            color: #4a3625;
+            transform: translateY(-3px);
+            box-shadow:
+                0 8px 16px rgba(0,0,0,0.45),
+                inset 0 2px 3px rgba(255,255,255,0.4);
+        }
+
+        .container {
+            background: rgba(255,255,255,0.92);
+            width: 70%;
+            margin: 35px auto;
+            padding: 28px;
+            border-radius: 20px;
+            border: 2px solid #d8c3a5;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            text-align: left;
+        }
+
+        h2 {
+            color: #5a3825;
+            text-align: center;
+            font-family: "Merriweather", serif;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 12px;
+            border: 2px solid #b49a84;
+            border-radius: 12px;
+            background: #f7f0e8;
+            font-size: 1rem;
+            font-family: "Merriweather", serif;
+            box-sizing: border-box;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            transition: 0.25s ease;
+        }
+
+        textarea:focus {
+            border-color: #8f725f;
+            background: #fffdf9;
+            box-shadow: 0 0 6px rgba(165,140,110,0.45);
+        }
+
+        .loader {
+            display: none;
+            margin-top: 12px;
+            color: #4b3621;
+            font-weight: 600;
+            font-style: italic;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        #result {
+            text-align: left;
+            margin-top: 25px;
+            padding: 18px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.92);
+            border: 2px solid #d8c3a5;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
+            font-family: "Merriweather", serif;
+            line-height: 1.55;
+        }
+
+        .warning {
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.92);
+            border: 2px solid #d8c3a5;
+            margin-bottom: 12px;
+            font-family: "Merriweather", serif;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+
+<header> KitchenBuddy – Recipe Parser </header>
+
+<button onclick="location.href='/'"> Back to Menu</button>
+
+<div class="container">
+    <h2> Paste your recipe </h2>
+    <textarea id="recipeInput" placeholder=" Paste a recipe here..."></textarea>
+    <br>
+    <div style="text-align:center;">
+        <button id="parseBtn" onclick="parseRecipe()"> Parse Recipe</button>
+    </div>
+
+    <div class="loader" id="loader">Parsing recipe… </div>
+    <div id="result"></div>
+</div>
+
+<script>
+const OFFICIAL_UTENSILS = [
+    "Blender","Mixer","Rice cooker","Colander","Spatula",
+    "Food mill","Funnel","Grater","Potato masher","Rolling pin",
+    "Strainer","Whisk"
+];
+const OFFICIAL_APPLIANCES = ["Microwave","Stove","Oven","Air fryer","Refrigerator"];
+
+function getSettingsFromSession() {
+    const saved = JSON.parse(sessionStorage.getItem("kitchenSettings") || "null");
+    if (!saved) return {measurement: null, utensils: [], appliances: []};
+    return {
+        measurement: saved.measurement || null,
+        utensils: saved.utensils || [],
+        appliances: saved.appliances || []
+    };
+}
+
+function convertQuantity(qty, measurement) {
+    if (!measurement || measurement === "") return qty; // nessuna conversione
+    return qty + (measurement === "metric" ? " (metric)" : " (US)");
+}
+
+
+async function parseRecipe() {
+    const recipeText = document.getElementById('recipeInput').value;
+    const resultDiv = document.getElementById('result');
+    const loader = document.getElementById('loader');
+
+
+    if (!recipeText.trim()) {
+        alert("Please paste a recipe first!");
+        return;
+    }
+
+    loader.style.display = 'block';
+    resultDiv.innerHTML = '';
+
+    const settings = getSettingsFromSession();
+
+    try {
+        const response = await fetch("/parse_recipe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recipe_text: recipeText, measurement_preference: settings.measurement }),
+        });
+
+        if (!response.ok) throw new Error("Server error");
+        const data = await response.json();
+        loader.style.display = 'none';
+
+        // Compute relevant missing tools: only official lists and only those flagged as required by recipe
+        const requiredTools = data.required_tools || [];
+        const requiredOfficial = requiredTools.filter(t => OFFICIAL_UTENSILS.includes(t) || OFFICIAL_APPLIANCES.includes(t));
+
+        // If user selected nothing -> assume they have everything -> no missing
+        const userSelected = (settings.utensils && settings.utensils.length > 0) || (settings.appliances && settings.appliances.length > 0);
+
+        let missing = [];
+        if (userSelected) {
+            missing = requiredOfficial.filter(t => {
+                if (OFFICIAL_UTENSILS.includes(t)) return !settings.utensils.includes(t);
+                if (OFFICIAL_APPLIANCES.includes(t)) return !settings.appliances.includes(t);
+                return false;
+            });
+        } else {
+            missing = [];
+        }
+
+        let warningHtml = "";
+        if (missing.length > 0) {
+            warningHtml = `
+                <div class="warning">
+                    <strong>Warning:</strong> This recipe requires tools you don't have: ${missing.join(", ")}.
+                </div>
+            `;
+        }
+
+
+        // Build HTML for recipe display (title, serves, total_time, ingredients, steps, storage)
+        let html = `${warningHtml}<h3>${data.title || "Untitled"}</h3>`;
+
+        if (data.servings) html += `<p><strong>Serves:</strong> ${data.servings}</p>`;
+        if (data.time) {
+            html += `<h4>Time</h4><ul>`;
+            if (data.time.prep) html += `<li>Prep: ${data.time.prep}</li>`;
+            if (data.time.cooking) html += `<li>Cooking: ${data.time.cooking}</li>`;
+            if (data.time.waiting) html += `<li>Waiting: ${data.time.waiting}</li>`;
+            if (data.time.total) html += `<li>Total: ${data.time.total}</li>`;
+            html += `</ul>`;
+        }
+        if (data.ingredients && data.ingredients.length > 0) {
+            html += `<h4> Ingredients</h4><ul>`;
+            data.ingredients.forEach(it => {
+                let qty = "";
+                if (it.quantity !== null && it.quantity !== undefined) {
+                    qty = " - " + convertQuantity(it.quantity, settings.measurement);
+                }
+                html += `<li>${it.item}${qty}</li>`;
+            });
+            html += `</ul>`;
+        }
+
+
+
+        if (data.steps && data.steps.length > 0) {
+            html += `<h4> Steps</h4>`;
+            data.steps.forEach(s => {
+                if (s.prep) html += `<h5>${s.prep}</h5>`; // opzionale: mostra il tipo di preparazione se presente
+                html += `<p>${s.number}. ${s.instruction}</p>`;
+            });
+        }
+
+
+        if (data.storage) {
+            html += `<h4> Storage</h4><p>${data.storage}</p>`;
+        }
+
+        resultDiv.innerHTML = html;
+
+    } catch (err) {
+        loader.style.display = 'none';
+        resultDiv.innerHTML = ' Error parsing recipe ';
+        console.error(err);
+    }
+}
+</script>
+
+</body>
+</html>

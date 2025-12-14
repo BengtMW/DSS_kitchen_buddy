@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KitchenBuddy – Main Menu</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background: url('https://images.unsplash.com/photo-1504754524776-8f4f37790ca0') 
+                center/cover fixed no-repeat;
+            color: #2e2e2e;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Soft dark overlay to make the text readable */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 25px;
+            font-size: 2.1em;
+            font-weight: bold;
+            font-family: "Merriweather", serif;
+            color: #5a3825;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            border-bottom: 4px solid #d8c3a5;
+            backdrop-filter: blur(3px);
+            text-align: center;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-family: "Merriweather", serif;
+            margin-top: 25px;
+            font-size: 1.7em;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+            text-align: center;
+        }
+
+        /* Cards with cooking aesthetic */
+        .menu-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 35px;
+            margin-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .app-card {
+            width: 260px;
+            height: 260px;
+            border-radius: 18px;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.35);
+            transform: translateY(0);
+            transition: 0.3s ease;
+            background-color: #fff;
+        }
+
+        /* Hover lift + stronger shadow */
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.55);
+        }
+
+        /* Background images for each tool */
+        .app-card[data-type="parser"] {
+            background: url('https://images.unsplash.com/photo-1604335399102-0e95dbd2e2e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center/cover;
+        }
+
+        .app-card[data-type="generator"] {
+            background: url('https://images.unsplash.com/photo-1604335399102-0e95dbd2e2e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center/cover;
+        }
+
+        .app-card[data-type="ask"] {
+            background: url('https://images.unsplash.com/photo-1604335399102-0e95dbd2e2e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center/cover;
+        }
+
+        /* Dark overlay for readability */
+        .app-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.1));
+        }
+
+        /* Text on card */
+        .app-card span {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 1.6em;
+            font-family: "Merriweather", serif;
+            font-weight: bold;
+            z-index: 5;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+        }
+
+
+        /* Settings button */
+        /* FORCE OVERRIDE — Rustic Settings Button */
+        body #settingsBtn {
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 12px !important;
+            background: linear-gradient(135deg, #4a3625, #463628) !important;
+            border: 2px solid #b49a84 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.45em !important;
+            color: #4a3625 !important;
+            position: absolute !important;
+            top: 18px !important;
+            right: 20px !important;
+            cursor: pointer !important;
+
+            box-shadow:
+                0 4px 10px rgba(0,0,0,0.35),
+                inset 0 2px 3px rgba(255,255,255,0.5),
+                inset 0 -2px 4px rgba(0,0,0,0.1) !important;
+
+            transition: 0.25s ease !important;
+        }
+
+        body #settingsBtn:hover {
+            background: linear-gradient(135deg, #dbc8b4, #cbb49d) !important;
+            transform: translateY(-3px) !important;
+            box-shadow:
+                0 8px 18px rgba(0,0,0,0.45),
+                inset 0 1px 3px rgba(255,255,255,0.4) !important;
+        }
+
+
+        /* Popup modal */
+        #settingsModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 60%;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 14px;
+            border: 2px solid #d8c3a5;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            font-family: "Merriweather", serif;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: #5a3825;
+        }
+
+        .modal-content h3 {
+            text-align: left;
+            margin-bottom: 12px; 
+        }
+
+
+        .settings-section {
+            margin-bottom: 40px; /* spazio tra le sezioni */
+            text-align: left;  /* centra titolo e checkbox */
+        }
+
+        .settings-section label {
+            display: inline-block;  /* per avere checkbox + testo centrati in colonna */
+            width: 180px;           /* larghezza uniforme come le grids di utensils/appliances */
+            margin: 6px 10px;       /* spazio tra checkbox */
+            cursor: pointer;
+            text-align: left;    
+            white-space: nowrap;    /* testo vicino checkbox */
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, max-content); /* due colonne, larghezza automatica */
+            gap: 8px 20px;       /* spazio verticale e orizzontale tra checkbox */
+            justify-content: start; /* allinea la griglia a sinistra */
+            margin-top: 10px;     /* piccolo spazio tra titolo e griglia */
+        }
+
+        .tools-grid label {
+            display: flex;
+            align-items: center;
+            gap: 6px; /* spazio tra checkbox e testo */
+            cursor: pointer;
+        }
+
+        .save-btn {
+            display: block;
+            margin: 25px auto;
+            background: #b89b83;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: 0.25s;
+            font-family: "Merriweather", serif;
+        }
+
+        .save-btn:hover {
+            background: #8f725f;
+        }
+
+
+        /* Footer */
+        .academic-footer {
+            background: rgba(255,255,255,0.92);
+            padding: 30px;
+            margin-top: 80px;
+            font-size: 0.8rem;
+            color: #5a3825;
+            text-align: center;
+            border-top: 4px solid #d8c3a5;
+            backdrop-filter: blur(4px);
+        }
+
+        .footer-top {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #4b3621;
+            font-weight: bold;
+        }
+
+        .footer-info span {
+            opacity: 0.85;
+            padding: 0 6px;
+        }
+
+    </style>
+</head>
+<body>
+    <header> KitchenBuddy – Choose Your App </header>
+
+    <div id="settingsBtn" onclick="openSettings()">⚙️</div>
+
+    <h2>What do you want to do today? </h2>
+
+    <div class="menu-container">
+    
+        <!-- Recipe Parser Card -->
+        <div class="app-card" onclick="location.href='/cook'" data-type="parser">
+            <span>Recipe Parser</span>
+        </div>
+
+        <!-- Recipe Generator Card -->
+        <div class="app-card" onclick="location.href='/recipe'" data-type="generator">
+            <span>Recipe Generator</span>
+        </div>
+
+        <!-- Ask The AI Card -->
+        <div class="app-card" onclick="location.href='/ask'" data-type="ask">
+            <span>Ask The AI</span>
+        </div>
+
+    </div>
+
+    <div id="settingsModal">
+        <div class="modal-content">
+            <h2>Kitchen Settings</h2>
+
+            <div class="settings-section">
+                <h3>Measurement System</h3>
+                <label><input type="radio" name="measurement" value="metric"> Grams / Liters (Metric)</label>
+                <label><input type="radio" name="measurement" value="us"> Cups / Ounces (US)</label>
+                <label><input type="radio" name="measurement" value="" checked> Keep original recipe units</label>
+            </div>
+
+            <div class="settings-section">
+                <h3>Utensils</h3>
+                <div class="tools-grid" id="utensilsList"></div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Appliances</h3>
+                <div class="tools-grid" id="appliancesList"></div>
+            </div>
+
+            <button class="save-btn" onclick="saveSettings()">Save Settings</button>
+        </div>
+    </div>
+
+
+
+<script>
+const UTENSILS = [
+    "Blender", "Mixer", "Rice cooker", "Colander", "Spatula",
+    "Food mill", "Funnel", "Grater", "Potato masher", "Rolling pin",
+    "Strainer", "Whisk"
+];
+
+const APPLIANCES = [
+    "Microwave", "Stove", "Oven", "Air fryer", "Refrigerator"
+];
+
+function openSettings() {
+    document.getElementById("settingsModal").style.display = "block";
+}
+
+function buildSettingsUI() {
+    // Load saved settings
+    let saved = null;
+    try {
+        saved = JSON.parse(sessionStorage.getItem("kitchenSettings") || "null");
+    } catch {
+        saved = null;
+    }
+
+    const savedUtensils = saved ? saved.utensils || [] : [];
+    const savedAppliances = saved ? saved.appliances || [] : [];
+    const savedMeasurement = saved ? saved.measurement || "" : "";
+
+    // Restore measurement
+    if (savedMeasurement !== "") {
+        const radios = document.querySelectorAll('input[name="measurement"]');
+        radios.forEach(r => {
+            if (r.value === savedMeasurement) r.checked = true;
+        });
+    }
+
+    // Build utensils list
+    const uContainer = document.getElementById("utensilsList");
+    uContainer.innerHTML = "";
+    UTENSILS.forEach(tool => {
+        const isChecked = savedUtensils.includes(tool) ? "checked" : "";
+        uContainer.innerHTML += `
+            <label><input type="checkbox" value="${tool}" ${isChecked}> ${tool}</label>
+        `;
+    });
+
+    // Build appliances list
+    const aContainer = document.getElementById("appliancesList");
+    aContainer.innerHTML = "";
+    APPLIANCES.forEach(tool => {
+        const isChecked = savedAppliances.includes(tool) ? "checked" : "";
+        aContainer.innerHTML += `
+            <label><input type="checkbox" value="${tool}" ${isChecked}> ${tool}</label>
+        `;
+    });
+}
+
+function saveSettings() {
+    const measurement = document.querySelector('input[name="measurement"]:checked')?.value || "";
+
+    const utensils = [...document.querySelectorAll('#utensilsList input:checked')]
+        .map(i => i.value);
+
+    const appliances = [...document.querySelectorAll('#appliancesList input:checked')]
+        .map(i => i.value);
+
+    const payload = {
+        measurement,
+        utensils,
+        appliances
+    };
+
+    // Save to session
+    sessionStorage.setItem("kitchenSettings", JSON.stringify(payload));
+
+    // Send to backend
+    fetch("/save-tools", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    }).catch(err => console.error(err));
+
+    alert("Settings saved!");
+    document.getElementById("settingsModal").style.display = "none";
+}
+
+
+window.onload = buildSettingsUI;
+</script>
+
+
+
+<footer class="academic-footer">
+
+    <div class="footer-top">
+        <span>Simulation Exercise: AI Training and Assessment</span>
+        <span class="footer-separator">•</span>
+        <span>Bengt Weerstand, Elena Sardanu, Niki Bonev, Noa Ubbens</span>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <span>University of Groningen</span>
+            <span class="footer-separator">•</span>
+            <span>BSc Data Science and Society</span>
+            <span class="footer-separator">•</span>
+            <span>2025/2026</span>
+            <span class="footer-separator">•</span>
+            <span>Lecturers: Prof. Dr. Andrej Zwitter and Dr. Joshua Schäuble</span>
+        </div>
+    </div>
+
+</footer>
+
+</body>
+</html>
