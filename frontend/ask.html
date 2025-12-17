@@ -38,8 +38,8 @@
         /* Back to Menu Button Container */
         .back-button-container {
             display: flex;
-            justify-content: center; /* horizontaal centreren */
-            margin: 15px 0; /* ruimte boven en onder de knop */
+            justify-content: center; /* horizontally center */
+            margin: 15px 0; /* space above and below the button */
         }
 
         button {
@@ -123,6 +123,16 @@
             font-size: 1rem;
             box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
         }
+
+        /* Voice button styling: make it similar to other buttons */
+        #voiceBtn {
+            margin-left: 10px;
+        }
+        #voiceStatus {
+            margin-left: 8px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
@@ -138,7 +148,10 @@
     <h2>Ask a cooking question</h2>
     <textarea id="questionInput" rows="3" placeholder="Type your main question here..."></textarea>
     
+    <!-- Ask and Voice buttons -->
     <button onclick="askQuestion()">Ask</button>
+    <button id="voiceBtn" type="button">🎙️ Speak</button>
+    <span id="voiceStatus"></span>
 
     <!-- Initially hidden loader -->
     <div id="loader"> Thinking…</div>
@@ -174,6 +187,54 @@ async function askQuestion() {
     } finally {
         document.getElementById("loader").style.display = "none";  // Hide loader
     }
+}
+
+// Voice recognition: speak to ask question.
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let listening = false;
+
+const voiceBtn = document.getElementById('voiceBtn');
+const voiceStatus = document.getElementById('voiceStatus');
+const questionInput = document.getElementById('questionInput');
+
+if (!SpeechRecognition) {
+    // Not supported
+    voiceBtn.disabled = true;
+    voiceStatus.innerText = ' Voice not supported.';
+} else {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+        listening = true;
+        voiceStatus.innerText = ' Listening…';
+        voiceBtn.innerText = '🛑 Stop';
+    };
+    recognition.onend = () => {
+        listening = false;
+        voiceStatus.innerText = '';
+        voiceBtn.innerText = '🎙️ Speak';
+    };
+    recognition.onerror = (e) => {
+        voiceStatus.innerText = ' Voice error: ' + e.error;
+    };
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.trim();
+        questionInput.value = transcript;
+        askQuestion();
+    };
+
+    voiceBtn.addEventListener('click', () => {
+        if (!recognition) return;
+        if (listening) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    });
 }
 </script>
 
